@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PLAN — Your plans. Your discipline. Your progress.</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#090D16" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #090D16;
+      --bg-surface: #0F1624;
+      --bg-card: #162033;
+      --accent: #60D9A0;
+      --accent-contrast: #072618;
+      --text-main: #F3F5F8;
+      --text-muted: #8E9BAE;
+      --border-soft: rgba(255, 255, 255, 0.08);
+      --highlight-top: rgba(255, 255, 255, 0.07);
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    .lux-card {
+      background: linear-gradient(165deg, color-mix(in srgb, var(--bg-card) 92%, white 8%) 0%, var(--bg-card) 100%);
+      border: 1px solid var(--border-soft);
+      box-shadow:
+        0 20px 40px -20px rgba(0, 0, 0, 0.65),
+        0 2px 6px -1px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 var(--highlight-top);
+      backdrop-filter: blur(18px);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.3s ease, background 0.35s ease;
+    }
+    .lux-card-interactive:hover {
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+      box-shadow:
+        0 24px 48px -18px rgba(0, 0, 0, 0.75),
+        0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+    .lux-sidebar {
+      background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-main) 100%);
+      border-right: 1px solid var(--border-soft);
+      transition: background 0.35s ease;
+    }
+    .lux-header {
+      background: color-mix(in srgb, var(--bg-main) 78%, transparent);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .lux-input {
+      background-color: color-mix(in srgb, var(--bg-main) 82%, black 18%);
+      color: var(--text-main);
+      border: 1px solid var(--border-soft);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .lux-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    .lux-btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 82%, black 18%) 100%);
+      color: var(--accent-contrast);
+      box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--accent) 45%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease, box-shadow 0.2s ease;
+    }
+    .lux-btn-primary:hover { filter: brightness(1.06); }
+    .lux-btn-primary:active { transform: scale(0.96); }
+
+    @keyframes viewSlideIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes cardStagger {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes barRise {
+      from { transform: scaleY(0); opacity: 0.4; }
+      to { transform: scaleY(1); opacity: 1; }
+    }
+    .animate-view { animation: viewSlideIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .animate-stagger { animation: cardStagger 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .bar-animate { transform-origin: bottom; animation: barRise 0.65s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .ring-progress { transition: stroke-dashoffset 0.75s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    .drawer-backdrop { transition: opacity 0.28s ease; }
+    .drawer-panel { transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col lg:flex-row overflow-x-hidden relative">
+
+  <!-- Subtle Ambient Luxury Glow -->
+  <div class="pointer-events-none fixed inset-0 overflow-hidden z-0">
+    <div class="absolute -top-40 right-0 w-[420px] h-[420px] rounded-full blur-[120px] opacity-20" style="background: var(--accent)"></div>
+    <div class="absolute bottom-0 -left-32 w-[360px] h-[360px] rounded-full blur-[120px] opacity-10" style="background: #6366f1"></div>
+  </div>
+
+  <!-- PC Sidebar Navigation -->
+  <aside class="hidden lg:flex lg:flex-col lg:w-64 lg:shrink-0 lg:sticky lg:top-0 lg:h-screen lux-sidebar p-4 z-20">
+    <div class="flex items-center justify-between px-2 mb-6">
+      <div>
+        <h1 class="text-2xl font-extrabold tracking-tight">PLAN<span style="color: var(--accent)">.</span></h1>
+        <p class="text-[11px] tracking-wide" style="color: var(--text-muted)">Discipline &amp; Progress</p>
+      </div>
+      <button id="pc-quick-add-btn" type="button" class="w-9 h-9 rounded-xl flex items-center justify-center lux-btn-primary" title="Quick Add">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+      </button>
+    </div>
+
+    <nav id="pc-nav" class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-1"></nav>
+
+    <div class="pt-3 mt-3 border-t flex items-center justify-between px-2 text-xs" style="border-color: var(--border-soft); color: var(--text-muted)">
+      <span id="sidebar-user-label" class="font-medium">Eldad</span>
+      <button id="sidebar-color-btn" type="button" class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-lg hover:bg-white/5 transition" style="color: var(--accent)">
+        <span class="w-2 h-2 rounded-full" style="background: var(--accent)"></span>
+        Theme
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Workspace -->
+  <div class="flex-1 flex flex-col min-h-screen pb-24 lg:pb-10 relative z-10">
+    <!-- Top Header -->
+    <header class="sticky top-0 z-10 lux-header px-4 lg:px-8 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="lg:hidden">
+          <h1 class="text-xl font-extrabold tracking-tight">PLAN<span style="color: var(--accent)">.</span></h1>
+        </div>
+        <div>
+          <h2 id="page-title" class="text-base lg:text-lg font-bold tracking-tight leading-tight">Dashboard</h2>
+          <p id="header-date" class="text-[11px] tracking-wide" style="color: var(--text-muted)"></p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Always-Accessible Formal Color Studio Trigger -->
+        <button id="header-color-btn" type="button" class="px-3 py-2 rounded-xl border text-xs font-medium flex items-center gap-1.5 active:scale-95 transition" style="border-color: var(--border-soft); background: var(--bg-card)" title="Color & Theme Studio">
+          <span class="w-2.5 h-2.5 rounded-full ring-2 ring-white/20" style="background: var(--accent)"></span>
+          <span class="hidden sm:inline">Colors</span>
+        </button>
+
+        <button id="mobile-quick-add-btn" type="button" class="lg:hidden px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 lux-btn-primary">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Add
+        </button>
+      </div>
+    </header>
+
+    <!-- Dynamic View Container -->
+    <main id="main-content" class="flex-1 px-4 lg:px-8 py-6 max-w-6xl w-full mx-auto"></main>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="lg:hidden fixed bottom-2.5 left-1/2 -translate-x-1/2 w-[calc(100%-1rem)] max-w-md z-30 lux-card rounded-2xl px-1.5 py-1.5 grid grid-cols-5 gap-1">
+    <button type="button" data-nav="dashboard" class="mob-nav-btn flex flex-col items-center py-1.5 rounded-xl text-[10px] font-medium transition"></button>
+    <button type="button" data-nav="tasks" class="mob-nav-btn flex flex-col items-center py-1.5 rounded-xl text-[10px] font-medium transition"></button>
+    <button type="button" data-nav="habits" class="mob-nav-btn flex flex-col items-center py-1.5 rounded-xl text-[10px] font-medium transition"></button>
+    <button type="button" data-nav="study" class="mob-nav-btn flex flex-col items-center py-1.5 rounded-xl text-[10px] font-medium transition"></button>
+    <button type="button" id="mob-more-btn" class="flex flex-col items-center py-1.5 rounded-xl text-[10px] font-medium transition" style="color: var(--text-muted)">
+      <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+      <span>More</span>
+    </button>
+  </nav>
+
+  <!-- Mobile More Drawer -->
+  <div id="more-drawer" class="fixed inset-0 z-40 hidden">
+    <div id="more-backdrop" class="absolute inset-0 bg-black/65 backdrop-blur-sm drawer-backdrop opacity-0"></div>
+    <div id="more-panel" class="absolute bottom-0 left-0 right-0 lux-card rounded-t-3xl p-5 max-h-[82vh] overflow-y-auto drawer-panel translate-y-full">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold tracking-tight">All Modules</h3>
+        <button id="close-more-btn" type="button" class="p-1.5 rounded-lg" style="color: var(--text-muted)">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="more-grid" class="grid grid-cols-3 gap-2.5"></div>
+    </div>
+  </div>
+
+  <!-- Formal Color Studio Drawer (Accessible Anytime) -->
+  <div id="color-drawer" class="fixed inset-0 z-50 hidden">
+    <div id="color-backdrop" class="absolute inset-0 bg-black/65 backdrop-blur-sm drawer-backdrop opacity-0"></div>
+    <div id="color-panel" class="absolute right-0 top-0 bottom-0 w-full max-w-sm lux-card p-6 overflow-y-auto drawer-panel translate-x-full flex flex-col gap-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-[10px] uppercase tracking-widest font-semibold" style="color: var(--accent)">Appearance Studio</span>
+          <h3 class="text-lg font-bold tracking-tight">Formal Color Correction</h3>
+        </div>
+        <button id="close-color-btn" type="button" class="p-1.5 rounded-xl border" style="border-color: var(--border-soft); color: var(--text-muted)">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div>
+        <p class="text-xs font-semibold mb-2.5" style="color: var(--text-muted)">Curated Formal Palettes</p>
+        <div id="preset-grid" class="grid grid-cols-1 gap-2"></div>
+      </div>
+
+      <div class="border-t pt-4 flex flex-col gap-3" style="border-color: var(--border-soft)">
+        <p class="text-xs font-semibold" style="color: var(--text-muted)">Custom Fine-Tuning</p>
+        <label class="flex items-center justify-between text-xs font-medium">
+          <span>Background</span>
+          <input id="cp-bg" type="color" class="w-10 h-8 rounded-lg border-0 bg-transparent cursor-pointer" />
+        </label>
+        <label class="flex items-center justify-between text-xs font-medium">
+          <span>Cards &amp; Surfaces</span>
+          <input id="cp-card" type="color" class="w-10 h-8 rounded-lg border-0 bg-transparent cursor-pointer" />
+        </label>
+        <label class="flex items-center justify-between text-xs font-medium">
+          <span>Primary Accent</span>
+          <input id="cp-accent" type="color" class="w-10 h-8 rounded-lg border-0 bg-transparent cursor-pointer" />
+        </label>
+        <label class="flex items-center justify-between text-xs font-medium">
+          <span>Text Color</span>
+          <input id="cp-text" type="color" class="w-10 h-8 rounded-lg border-0 bg-transparent cursor-pointer" />
+        </label>
+      </div>
+
+      <button id="reset-colors-btn" type="button" class="mt-auto w-full py-2.5 rounded-xl text-xs font-semibold border active:scale-95 transition" style="border-color: var(--border-soft)">
+        Reset to Default PLAN Palette
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Add Modal -->
+  <div id="quick-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div id="quick-backdrop" class="absolute inset-0 bg-black/65 backdrop-blur-sm drawer-backdrop opacity-0"></div>
+    <div id="quick-panel" class="relative w-full max-w-md lux-card rounded-2xl p-5 drawer-panel scale-95 opacity-0">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold tracking-tight">Quick Add to PLAN</h3>
+        <button id="close-quick-btn" type="button" class="p-1 rounded-lg" style="color: var(--text-muted)">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="flex flex-col gap-3">
+        <select id="quick-type" class="lux-input rounded-xl px-3 py-2.5 text-sm">
+          <option value="task">Daily Task</option>
+          <option value="habit">Habit</option>
+          <option value="goal">Goal</option>
+          <option value="note">Note</option>
+          <option value="reminder">Reminder</option>
+        </select>
+        <input id="quick-title" type="text" placeholder="Title or name..." class="lux-input rounded-xl px-3 py-2.5 text-sm" />
+        <input id="quick-extra" type="text" placeholder="Optional detail (category, deadline, or note)..." class="lux-input rounded-xl px-3 py-2.5 text-sm" />
+        <button id="quick-save-btn" type="button" class="w-full py-2.5 rounded-xl font-semibold text-sm lux-btn-primary">Save Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl lux-card text-xs font-semibold shadow-2xl opacity-0 pointer-events-none transition-all duration-300"></div>
+
+  <script>
+    const STORAGE_KEY = "plan_lux_system_v3";
+
+    const FORMAL_PALETTES = [
+      { id: "obsidian", name: "PLAN Obsidian Emerald", bg: "#090D16", surface: "#0F1624", card: "#162033", accent: "#60D9A0", text: "#F3F5F8", muted: "#8E9BAE", contrast: "#072618", light: false },
+      { id: "classic", name: "PLAN Classic Slate", bg: "#101827", surface: "#172133", card: "#26364D", accent: "#60D9A0", text: "#F3F5F8", muted: "#94A3B8", contrast: "#072618", light: false },
+      { id: "champagne", name: "Executive Onyx & Gold", bg: "#0B0B0E", surface: "#131318", card: "#1C1D24", accent: "#E5C17B", text: "#F8F7F4", muted: "#9E9B93", contrast: "#1F1707", light: false },
+      { id: "sapphire", name: "Midnight Sapphire", bg: "#070D19", surface: "#0C1526", card: "#14223B", accent: "#5BA4FC", text: "#F1F5F9", muted: "#8FA3BF", contrast: "#061936", light: false },
+      { id: "ivory", name: "Formal Ivory Daylight", bg: "#F4F6F9", surface: "#FFFFFF", card: "#FFFFFF", accent: "#0F9F6E", text: "#0F172A", muted: "#475569", contrast: "#FFFFFF", light: true }
+    ];
+
+    const NAV_ITEMS = [
+      { id: "dashboard", label: "Dashboard", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>' },
+      { id: "tasks", label: "Daily Tasks", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>' },
+      { id: "goals", label: "Goals", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5"/>' },
+      { id: "workout", label: "Workout", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>' },
+      { id: "study", label: "Study", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>' },
+      { id: "habits", label: "Habits", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/>' },
+      { id: "notes", label: "Notes", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>' },
+      { id: "discipline", label: "Discipline", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z"/>' },
+      { id: "reminders", label: "Reminders", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>' },
+      { id: "categories", label: "Categories", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>' },
+      { id: "custom", label: "Add Anything", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>' },
+      { id: "analytics", label: "Statistics", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>' },
+      { id: "settings", label: "Settings", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>' }
+    ];
+
+    const QUOTES = [
+      "Discipline is choosing between what you want now and what you want most.",
+      "Small daily wins compound into unstoppable momentum.",
+      "Your plans only work when you work your plans.",
+      "Consistency beats intensity every single week."
+    ];
+
+    function defaultState() {
+      return {
+        userName: "Eldad",
+        activeTab: "dashboard",
+        colors: { ...FORMAL_PALETTES[0] },
+        tasks: [
+          { id: 1, title: "Finish core app layout", priority: "high", category: "Projects", date: "Today", done: true },
+          { id: 2, title: "45-minute full-body workout", priority: "medium", category: "Fitness", date: "Today", done: false },
+          { id: 3, title: "Read 20 pages of tech docs", priority: "low", category: "Education", date: "Today", done: false }
+        ],
+        goals: [
+          { id: 1, title: "Launch PLAN v1.0 Web App", type: "Short-term", deadline: "2026-11-30", progress: 72 },
+          { id: 2, title: "Build 90-day workout consistency", type: "Long-term", deadline: "2027-02-15", progress: 45 }
+        ],
+        workouts: [
+          { id: 1, exercise: "Push-ups & Dips", sets: 4, reps: 15, duration: "25 min" },
+          { id: 2, exercise: "Core & Plank Circuit", sets: 3, reps: 12, duration: "15 min" }
+        ],
+        studySessions: [
+          { id: 1, subject: "JavaScript & DOM", lesson: "State management & localStorage", minutes: 45, done: true },
+          { id: 2, subject: "UI/UX Principles", lesson: "Micro-interactions & spacing", minutes: 30, done: false }
+        ],
+        habits: [
+          { id: 1, name: "Morning Hydration & Moringa", freq: "Daily", streak: 6, doneToday: true },
+          { id: 2, name: "1 Hour Focused Coding", freq: "Daily", streak: 4, doneToday: false },
+          { id: 3, name: "Plan Tomorrow Before Sleep", freq: "Daily", streak: 9, doneToday: true }
+        ],
+        notes: [
+          { id: 1, title: "PLAN Design System", folder: "Projects", body: "Formal luxury palette with live color correction anytime.", pinned: true },
+          { id: 2, title: "Weekly Review Checklist", folder: "Personal", body: "Audit missed commitments, update goals, and prep next week's priorities.", pinned: false }
+        ],
+        discipline: [
+          { id: 1, missed: "Skipped evening study block", date: "Nov 15", reason: "Got distracted scrolling", consequence: "Extra 30-min study session", completed: true, lesson: "Keep phone in another room during study." }
+        ],
+        reminders: [
+          { id: 1, title: "Evening Workout Check-in", time: "Today, 6:00 PM", repeat: "Daily", enabled: true },
+          { id: 2, title: "Weekly Goal Review", time: "Sunday, 7:00 PM", repeat: "Weekly", enabled: true }
+        ],
+        categories: [
+          { id: 1, name: "Personal", color: "#60D9A0" },
+          { id: 2, name: "Business", color: "#38BDF8" },
+          { id: 3, name: "Fitness", color: "#F59E0B" },
+          { id: 4, name: "Education", color: "#A78BFA" },
+          { id: 5, name: "Projects", color: "#F472B6" }
+        ],
+        customItems: [
+          { id: 1, name: "Reading Tracker", desc: "Track daily pages read", freq: "Daily", count: 14 }
+        ],
+        weeklyScores: [68, 82, 74, 90, 85, 64, 80]
+      };
+    }
+
+    let state = defaultState();
+    let timerSeconds = 25 * 60;
+    let timerInterval = null;
+    let timerRunning = false;
+    let taskFilter = "all";
+    let noteSearch = "";
+    let toastTimeout = null;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) state = { ...defaultState(), ...JSON.parse(raw) };
+      } catch (e) {
+        state = defaultState();
+      }
+    }
+
+    function saveState() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+
+    function applyColors() {
+      const c = state.colors || FORMAL_PALETTES[0];
+      const r = document.documentElement.style;
+      r.setProperty("--bg-main", c.bg);
+      r.setProperty("--bg-surface", c.surface || c.bg);
+      r.setProperty("--bg-card", c.card);
+      r.setProperty("--accent", c.accent);
+      r.setProperty("--accent-contrast", c.contrast || "#072618");
+      r.setProperty("--text-main", c.text);
+      r.setProperty("--text-muted", c.muted || (c.light ? "#475569" : "#8E9BAE"));
+      r.setProperty("--border-soft", c.light ? "rgba(15, 23, 42, 0.1)" : "rgba(255, 255, 255, 0.08)");
+      r.setProperty("--highlight-top", c.light ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.07)");
+
+      const cpBg = document.getElementById("cp-bg");
+      const cpCard = document.getElementById("cp-card");
+      const cpAcc = document.getElementById("cp-accent");
+      const cpTxt = document.getElementById("cp-text");
+      if (cpBg) cpBg.value = c.bg;
+      if (cpCard) cpCard.value = c.card;
+      if (cpAcc) cpAcc.value = c.accent;
+      if (cpTxt) cpTxt.value = c.text;
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.remove("opacity-0", "-translate-y-2");
+      el.classList.add("opacity-100", "translate-y-0");
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        el.classList.remove("opacity-100", "translate-y-0");
+        el.classList.add("opacity-0", "-translate-y-2");
+      }, 2000);
+    }
+
+    function renderNavigation() {
+      const pcNav = document.getElementById("pc-nav");
+      pcNav.innerHTML = NAV_ITEMS.map((item) => {
+        const active = state.activeTab === item.id;
+        return `
+          <button type="button" data-nav="${item.id}" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition active:scale-[0.98] ${active ? "font-semibold" : "hover:bg-white/5"}"
+            style="${active ? "background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent);" : "color: var(--text-muted);"}">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${item.icon}</svg>
+            <span class="truncate">${item.label}</span>
+          </button>`;
+      }).join("");
+
+      document.querySelectorAll(".mob-nav-btn").forEach((btn) => {
+        const id = btn.dataset.nav;
+        const item = NAV_ITEMS.find((i) => i.id === id);
+        const active = state.activeTab === id;
+        btn.style.color = active ? "var(--accent)" : "var(--text-muted)";
+        btn.style.background = active ? "color-mix(in srgb, var(--accent) 14%, transparent)" : "transparent";
+        btn.innerHTML = `<svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${item.icon}</svg><span>${item.label.replace("Daily ", "")}</span>`;
+      });
+
+      document.getElementById("more-grid").innerHTML = NAV_ITEMS.map((item) => {
+        const active = state.activeTab === item.id;
+        return `
+          <button type="button" data-nav="${item.id}" class="flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl border text-xs font-medium active:scale-95 transition"
+            style="${active ? "border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);" : "border-color: var(--border-soft); color: var(--text-main); background: var(--bg-main);"}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${item.icon}</svg>
+            <span class="text-[11px] text-center leading-tight">${item.label}</span>
+          </button>`;
+      }).join("");
+
+      document.querySelectorAll("[data-nav]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.activeTab = btn.dataset.nav;
+          saveState();
+          closeMoreDrawer();
+          renderAll();
+        });
+      });
+    }
+
+    function renderPresets() {
+      const grid = document.getElementById("preset-grid");
+      grid.innerHTML = FORMAL_PALETTES.map((p) => {
+        const active = state.colors.id === p.id;
+        return `
+          <button type="button" data-preset="${p.id}" class="flex items-center justify-between p-3 rounded-xl border text-left transition active:scale-[0.98]"
+            style="background: ${p.card}; color: ${p.text}; border-color: ${active ? p.accent : "rgba(255,255,255,0.12)"}">
+            <span class="text-xs font-semibold">${p.name}</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded-full border border-white/20" style="background: ${p.bg}"></span>
+              <span class="w-3.5 h-3.5 rounded-full border border-white/20" style="background: ${p.card}"></span>
+              <span class="w-3.5 h-3.5 rounded-full border border-white/20" style="background: ${p.accent}"></span>
+            </div>
+          </button>`;
+      }).join("");
+
+      grid.querySelectorAll("[data-preset]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const found = FORMAL_PALETTES.find((x) => x.id === btn.dataset.preset);
+          if (found) {
+            state.colors = { ...found };
+            saveState();
+            applyColors();
+            renderPresets();
+            renderAll();
+            showToast(`Theme: ${found.name}`);
+          }
+        });
+      });
+    }
+
+    function openColorDrawer() {
+      renderPresets();
+      const d = document.getElementById("color-drawer");
+      d.classList.remove("hidden");
+      requestAnimationFrame(() => {
+        document.getElementById("color-backdrop").classList.remove("opacity-0");
+        document.getElementById("color-panel").classList.remove("translate-x-full");
+      });
+    }
+    function closeColorDrawer() {
+      document.getElementById("color-backdrop").classList.add("opacity-0");
+      document.getElementById("color-panel").classList.add("translate-x-full");
+      setTimeout(() => document.getElementById("color-drawer").classList.add("hidden"), 300);
+    }
+
+    function openMoreDrawer() {
+      const d = document.getElementById("more-drawer");
+      d.classList.remove("hidden");
+      requestAnimationFrame(() => {
+        document.getElementById("more-backdrop").classList.remove("opacity-0");
+        document.getElementById("more-panel").classList.remove("translate-y-full");
+      });
+    }
+    function closeMoreDrawer() {
+      document.getElementById("more-backdrop").classList.add("opacity-0");
+      document.getElementById("more-panel").classList.add("translate-y-full");
+      setTimeout(() => document.getElementById("more-drawer").classList.add("hidden"), 280);
+    }
+
+    function openQuickModal() {
+      const m = document.getElementById("quick-modal");
+      m.classList.remove("hidden");
+      m.classList.add("flex");
+      requestAnimationFrame(() => {
+        document.getElementById("quick-backdrop").classList.remove("opacity-0");
+        document.getElementById("quick-panel").classList.remove("scale-95", "opacity-0");
+      });
+      document.getElementById("quick-title").focus();
+    }
+    function closeQuickModal() {
+      document.getElementById("quick-backdrop").classList.add("opacity-0");
+      document.getElementById("quick-panel").classList.add("scale-95", "opacity-0");
+      setTimeout(() => {
+        const m = document.getElementById("quick-modal");
+        m.classList.add("hidden");
+        m.classList.remove("flex");
+      }, 240);
+    }
+
+    function calcDailyProgress() {
+      const total = state.tasks.length + state.habits.length;
+      if (total === 0) return 0;
+      const done = state.tasks.filter((t) => t.done).length + state.habits.filter((h) => h.doneToday).length;
+      return Math.round((done / total) * 100);
+    }
+
+    function renderDashboard(main) {
+      const pct = calcDailyProgress();
+      const circ = 2 * Math.PI * 30;
+      const offset = circ - (pct / 100) * circ;
+      const quote = QUOTES[new Date().getDate() % QUOTES.length];
+      const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      const doneTasks = state.tasks.filter((t) => t.done).length;
+      const doneHabits = state.habits.filter((h) => h.doneToday).length;
+
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-5">
+          <section class="lux-card rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full" style="background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent)">Welcome back, ${state.userName}</span>
+              <h3 class="text-xl lg:text-2xl font-extrabold tracking-tight mt-3">Your plans. Your discipline. Your progress.</h3>
+              <p class="text-xs mt-1.5 italic" style="color: var(--text-muted)">"${quote}"</p>
+            </div>
+            <div class="flex items-center gap-4 shrink-0">
+              <div class="relative w-20 h-20 flex items-center justify-center">
+                <svg class="w-20 h-20 -rotate-90 drop-shadow-md" viewBox="0 0 72 72">
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6"></circle>
+                  <circle class="ring-progress" cx="36" cy="36" r="30" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"></circle>
+                </svg>
+                <span class="absolute text-sm font-extrabold tabular-nums">${pct}%</span>
+              </div>
+              <div class="text-xs tabular-nums">
+                <div class="font-semibold">Daily Focus</div>
+                <div style="color: var(--text-muted)">${doneTasks}/${state.tasks.length} tasks</div>
+                <div style="color: var(--text-muted)">${doneHabits}/${state.habits.length} habits</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+            ${[
+              { jump: "tasks", label: "Today's Tasks", val: state.tasks.length, sub: `${doneTasks} completed` },
+              { jump: "habits", label: "Top Streak", val: `${Math.max(0, ...state.habits.map(h => h.streak))}d`, sub: `${doneHabits} done today` },
+              { jump: "goals", label: "Active Goals", val: state.goals.length, sub: "On schedule" },
+              { jump: "reminders", label: "Reminders", val: state.reminders.filter(r => r.enabled).length, sub: "Active alerts" }
+            ].map((s, idx) => `
+              <button type="button" data-jump="${s.jump}" class="lux-card lux-card-interactive animate-stagger rounded-2xl p-4 text-left" style="animation-delay: ${idx * 55}ms">
+                <div class="text-[11px] uppercase tracking-wider font-semibold" style="color: var(--text-muted)">${s.label}</div>
+                <div class="text-2xl font-extrabold tabular-nums mt-1.5">${s.val}</div>
+                <div class="text-[11px] font-medium mt-1" style="color: var(--accent)">${s.sub}</div>
+              </button>
+            `).join("")}
+          </section>
+
+          <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="lux-card rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-bold tracking-tight">Weekly Consistency</h3>
+                <span class="text-xs font-semibold tabular-nums" style="color: var(--accent)">Avg ${Math.round(state.weeklyScores.reduce((a,b)=>a+b,0)/7)}%</span>
+              </div>
+              <div class="h-36 flex items-end justify-between gap-2.5 pt-4">
+                ${state.weeklyScores.map((val, i) => `
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <span class="text-[10px] tabular-nums" style="color: var(--text-muted)">${val}%</span>
+                    <div class="w-full rounded-t-lg bar-animate" style="height: ${val}%; background: ${i === 6 ? "var(--accent)" : "color-mix(in srgb, var(--accent) 42%, transparent)"}; animation-delay: ${i * 65}ms"></div>
+                    <span class="text-[11px] font-medium" style="color: var(--text-muted)">${days[i]}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+
+            <div class="lux-card rounded-2xl p-5 flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold tracking-tight">Today's Priorities</h3>
+                <button type="button" data-jump="tasks" class="text-xs font-semibold" style="color: var(--accent)">Open Tasks</button>
+              </div>
+              <div class="flex flex-col gap-2">
+                ${state.tasks.slice(0, 4).map((t) => `
+                  <div class="flex items-center justify-between p-3 rounded-xl border" style="border-color: var(--border-soft); background: color-mix(in srgb, var(--bg-main) 65%, transparent)">
+                    <span class="text-xs ${t.done ? "line-through opacity-50" : "font-medium"}">${t.title}</span>
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent)">${t.priority}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          </section>
+
+          <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="lux-card rounded-2xl p-5 flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold tracking-tight">Active Goals</h3>
+                <button type="button" data-jump="goals" class="text-xs font-semibold" style="color: var(--accent)">View All</button>
+              </div>
+              ${state.goals.slice(0, 2).map((g) => `
+                <div>
+                  <div class="flex justify-between text-xs mb-1.5">
+                    <span class="font-medium">${g.title}</span>
+                    <span class="font-semibold tabular-nums" style="color: var(--accent)">${g.progress}%</span>
+                  </div>
+                  <div class="w-full h-2 rounded-full overflow-hidden" style="background: var(--bg-main)">
+                    <div class="h-full rounded-full transition-all duration-700" style="width: ${g.progress}%; background: var(--accent)"></div>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+
+            <div class="lux-card rounded-2xl p-5 flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold tracking-tight">Upcoming Reminders</h3>
+                <button type="button" data-jump="reminders" class="text-xs font-semibold" style="color: var(--accent)">Manage</button>
+              </div>
+              ${state.reminders.slice(0, 2).map((r) => `
+                <div class="flex items-center justify-between p-3 rounded-xl border" style="border-color: var(--border-soft); background: color-mix(in srgb, var(--bg-main) 65%, transparent)">
+                  <div>
+                    <div class="text-xs font-medium">${r.title}</div>
+                    <div class="text-[11px]" style="color: var(--text-muted)">${r.time} · ${r.repeat}</div>
+                  </div>
+                  <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full" style="background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent)">${r.enabled ? "On" : "Off"}</span>
+                </div>
+              `).join("")}
+            </div>
+          </section>
+        </div>`;
+
+      main.querySelectorAll("[data-jump]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.activeTab = btn.dataset.jump;
+          saveState();
+          renderAll();
+        });
+      });
+    }
+
+    function renderTasks(main) {
+      const filtered = state.tasks.filter((t) => taskFilter === "all" ? true : taskFilter === "active" ? !t.done : t.done);
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4">
+          <form id="task-form" class="lux-card rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+            <input id="t-title" type="text" placeholder="Task title..." required class="lux-input sm:col-span-5 rounded-xl px-3 py-2.5 text-sm" />
+            <select id="t-prio" class="lux-input sm:col-span-2 rounded-xl px-2.5 py-2.5 text-sm">
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <select id="t-cat" class="lux-input sm:col-span-3 rounded-xl px-2.5 py-2.5 text-sm">
+              ${state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join("")}
+            </select>
+            <button type="submit" class="sm:col-span-2 rounded-xl py-2.5 px-3 text-sm font-semibold lux-btn-primary">Add Task</button>
+          </form>
+
+          <div class="flex gap-2">
+            ${["all", "active", "done"].map(f => `
+              <button type="button" data-tf="${f}" class="tf-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold capitalize transition active:scale-95"
+                style="${taskFilter === f ? "background: var(--accent); color: var(--accent-contrast);" : "background: var(--bg-card); color: var(--text-muted);"}">${f}</button>
+            `).join("")}
+          </div>
+
+          <div class="flex flex-col gap-2.5">
+            ${filtered.length === 0 ? `<div class="lux-card rounded-2xl p-8 text-center text-sm" style="color: var(--text-muted)">No tasks in this view.</div>` : filtered.map((t, idx) => `
+              <div class="lux-card lux-card-interactive animate-stagger rounded-2xl p-3.5 flex items-center justify-between gap-3" style="animation-delay: ${idx * 40}ms">
+                <button type="button" data-toggle-task="${t.id}" class="flex items-center gap-3 text-left flex-1 min-w-0">
+                  <span class="w-5 h-5 rounded-lg flex items-center justify-center shrink-0 border transition" style="${t.done ? "background: var(--accent); border-color: var(--accent); color: var(--accent-contrast);" : "border-color: var(--text-muted);"}">${t.done ? "✓" : ""}</span>
+                  <div class="min-w-0">
+                    <div class="text-sm font-medium truncate ${t.done ? "line-through opacity-50" : ""}">${t.title}</div>
+                    <div class="text-[11px]" style="color: var(--text-muted)">${t.category} · ${t.priority} priority</div>
+                  </div>
+                </button>
+                <button type="button" data-del-task="${t.id}" class="text-xs px-2.5 py-1 rounded-lg hover:bg-rose-500/20 text-rose-400 transition">Delete</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+
+      document.getElementById("task-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const title = document.getElementById("t-title").value.trim();
+        if (!title) return;
+        state.tasks.unshift({ id: Date.now(), title, priority: document.getElementById("t-prio").value, category: document.getElementById("t-cat").value, date: "Today", done: false });
+        saveState();
+        showToast("Task added");
+        renderAll();
+      });
+      main.querySelectorAll(".tf-btn").forEach(b => b.addEventListener("click", () => { taskFilter = b.dataset.tf; renderAll(); }));
+      main.querySelectorAll("[data-toggle-task]").forEach(b => b.addEventListener("click", () => {
+        const t = state.tasks.find(x => x.id === Number(b.dataset.toggleTask));
+        if (t) { t.done = !t.done; saveState(); renderAll(); }
+      }));
+      main.querySelectorAll("[data-del-task]").forEach(b => b.addEventListener("click", () => {
+        state.tasks = state.tasks.filter(x => x.id !== Number(b.dataset.delTask));
+        saveState();
+        showToast("Task deleted");
+        renderAll();
+      }));
+    }
+
+    function renderGoals(main) {
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4">
+          <form id="goal-form" class="lux-card rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+            <input id="g-title" type="text" placeholder="Goal title..." required class="lux-input sm:col-span-5 rounded-xl px-3 py-2.5 text-sm" />
+            <select id="g-type" class="lux-input sm:col-span-2 rounded-xl px-2.5 py-2.5 text-sm">
+              <option>Short-term</option>
+              <option>Long-term</option>
+            </select>
+            <input id="g-deadline" type="date" class="lux-input sm:col-span-3 rounded-xl px-2.5 py-2.5 text-sm" />
+            <button type="submit" class="sm:col-span-2 rounded-xl py-2.5 px-3 text-sm font-semibold lux-btn-primary">Add Goal</button>
+          </form>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            ${state.goals.map((g, idx) => `
+              <div class="lux-card lux-card-interactive animate-stagger rounded-2xl p-4 flex flex-col gap-3" style="animation-delay: ${idx * 50}ms">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full" style="background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent)">${g.type}</span>
+                    <h4 class="text-sm font-bold mt-2">${g.title}</h4>
+                    <p class="text-xs" style="color: var(--text-muted)">Target: ${g.deadline || "No date"}</p>
+                  </div>
+                  <button type="button" data-del-goal="${g.id}" class="text-xs text-rose-400">Delete</button>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1 tabular-nums"><span>Progress</span><span style="color: var(--accent)">${g.progress}%</span></div>
+                  <input type="range" min="0" max="100" value="${g.progress}" data-goal-range="${g.id}" class="w-full" style="accent-color: var(--accent)" />
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+
+      document.getElementById("goal-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const title = document.getElementById("g-title").value.trim();
+        if (!title) return;
+        state.goals.unshift({ id: Date.now(), title, type: document.getElementById("g-type").value, deadline: document.getElementById("g-deadline").value, progress: 0 });
+        saveState();
+        showToast("Goal created");
+        renderAll();
+      });
+      main.querySelectorAll("[data-goal-range]").forEach(r => r.addEventListener("input", () => {
+        const g = state.goals.find(x => x.id === Number(r.dataset.goalRange));
+        if (g) { g.progress = Number(r.value); saveState(); renderAll(); }
+      }));
+      main.querySelectorAll("[data-del-goal]").forEach(b => b.addEventListener("click", () => {
+        state.goals = state.goals.filter(x => x.id !== Number(b.dataset.delGoal));
+        saveState();
+        renderAll();
+      }));
+    }
+
+    function renderWorkout(main) {
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4">
+          <form id="wo-form" class="lux-card rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-12 gap-2.5">
+            <input id="w-ex" type="text" placeholder="Exercise name..." required class="lux-input col-span-2 sm:col-span-4 rounded-xl px-3 py-2.5 text-sm" />
+            <input id="w-sets" type="number" min="1" value="3" class="lux-input sm:col-span-2 rounded-xl px-3 py-2.5 text-sm" />
+            <input id="w-reps" type="number" min="1" value="12" class="lux-input sm:col-span-2 rounded-xl px-3 py-2.5 text-sm" />
+            <input id="w-dur" type="text" value="20 min" class="lux-input sm:col-span-2 rounded-xl px-3 py-2.5 text-sm" />
+            <button type="submit" class="col-span-2 sm:col-span-2 rounded-xl py-2.5 px-3 text-sm font-semibold lux-btn-primary">Log</button>
+          </form>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            ${state.workouts.map((w, idx) => `
+              <div class="lux-card lux-card-interactive animate-stagger rounded-2xl p-4 flex items-center justify-between" style="animation-delay: ${idx * 45}ms">
+                <div>
+                  <h4 class="text-sm font-bold">${w.exercise}</h4>
+                  <p class="text-xs mt-1 tabular-nums" style="color: var(--text-muted)">${w.sets} sets × ${w.reps} reps · ${w.duration}</p>
+                </div>
+                <button type="button" data-del-wo="${w.id}" class="text-xs text-rose-400">Remove</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+      document.getElementById("wo-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        state.workouts.unshift({
+          id: Date.now(),
+          exercise: document.getElementById("w-ex").value.trim(),
+          sets: Number(document.getElementById("w-sets").value) || 3,
+          reps: Number(document.getElementById("w-reps").value) || 10,
+          duration: document.getElementById("w-dur").value.trim() || "20 min"
+        });
+        saveState();
+        showToast("Workout logged");
+        renderAll();
+      });
+      main.querySelectorAll("[data-del-wo]").forEach(b => b.addEventListener("click", () => {
+        state.workouts = state.workouts.filter(x => x.id !== Number(b.dataset.delWo));
+        saveState();
+        renderAll();
+      }));
+    }
+
+    function formatTimer(sec) {
+      const m = String(Math.floor(sec / 60)).padStart(2, "0");
+      const s = String(sec % 60).padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function renderStudy(main) {
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4">
+          <section class="lux-card rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--accent)">Focus Study Timer</span>
+              <div id="study-timer-display" class="text-4xl font-extrabold tracking-tight tabular-nums mt-1">${formatTimer(timerSeconds)}</div>
+            </div>
+            <div class="flex gap-2">
+              <button id="timer-toggle-btn" type="button" class="px-5 py-2.5 rounded-xl text-xs font-semibold lux-btn-primary">${timerRunning ? "Pause" : "Start Focus"}</button>
+              <button id="timer-reset-btn" type="button" class="px-4 py-2.5 rounded-xl text-xs font-semibold border active:scale-95 transition" style="border-color: var(--border-soft)">Reset 25m</button>
+            </div>
+          </section>
+
+          <form id="study-form" class="lux-card rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+            <input id="s-sub" type="text" placeholder="Subject..." required class="lux-input sm:col-span-4 rounded-xl px-3 py-2.5 text-sm" />
+            <input id="s-les" type="text" placeholder="Lesson or assignment..." required class="lux-input sm:col-span-4 rounded-xl px-3 py-2.5 text-sm" />
+            <input id="s-min" type="number" min="5" value="30" class="lux-input sm:col-span-2 rounded-xl px-3 py-2.5 text-sm" />
+            <button type="submit" class="sm:col-span-2 rounded-xl py-2.5 px-3 text-sm font-semibold lux-btn-primary">Add</button>
+          </form>
+
+          <div class="flex flex-col gap-2.5">
+            ${state.studySessions.map((s, idx) => `
+              <div class="lux-card lux-card-interactive animate-stagger rounded-2xl p-3.5 flex items-center justify-between gap-3" style="animation-delay: ${idx * 45}ms">
+                <button type="button" data-toggle-study="${s.id}" class="flex items-center gap-3 text-left flex-1">
+                  <span class="w-5 h-5 rounded-lg flex items-center justify-center border transition" style="${s.done ? "background: var(--accent); border-color: var(--accent); color: var(--accent-contrast);" : "border-color: var(--text-muted);"}">${s.done ? "✓" : ""}</span>
+                  <div>
+                    <div class="text-sm font-semibold ${s.done ? "line-through opacity-50" : ""}">${s.subject}: ${s.lesson}</div>
+                    <div class="text-xs tabular-nums" style="color: var(--text-muted)">${s.minutes} minutes</div>
+                  </div>
+                </button>
+                <button type="button" data-del-study="${s.id}" class="text-xs text-rose-400">Delete</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+
+      document.getElementById("timer-toggle-btn").addEventListener("click", () => {
+        if (timerRunning) {
+          clearInterval(timerInterval);
+          timerRunning = false;
+        } else {
+          timerRunning = true;
+          clearInterval(timerInterval);
+          timerInterval = setInterval(() => {
+            if (timerSeconds > 0) {
+              timerSeconds--;
+              const disp = document.getElementById("study-timer-display");
+              if (disp) disp.textContent = formatTimer(timerSeconds);
+            } else {
+              clearInterval(timerInterval);
+              timerRunning = false;
+              showToast("Study session complete!");
+              renderAll();
+            }
+          }, 1000);
+        }
+        renderAll();
+      });
+      document.getElementById("timer-reset-btn").addEventListener("click", () => {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        timerSeconds = 25 * 60;
+        renderAll();
+      });
+      document.getElementById("study-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        state.studySessions.unshift({
+          id: Date.now(),
+          subject: document.getElementById("s-sub").value.trim(),
+          lesson: document.getElementById("s-les").value.trim(),
+          minutes: Number(document.getElementById("s-min").value) || 30,
+          done: false
+        });
+        saveState();
+        showToast("Study session added");
+        renderAll();
+      });
+      main.querySelectorAll("[data-toggle-study]").forEach(b => b.addEventListener("click", () => {
+        const s = state.studySessions.find(x => x.id === Number(b.dataset.toggleStudy));
+        if (s) { s.done = !s.done; saveState(); renderAll(); }
+      }));
+      main.querySelectorAll("[data-del-study]").forEach(b => b.addEventListener("click", () => {
+        state.studySessions = state.studySessions.filter(x => x.id !== Number(b.dataset.delStudy));
+        saveState();
+        renderAll();
+      }));
+    }
+
+    function renderHabits(main) {
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4">
+          <form id="habit-form" class="lux-card rounded-2xl p-4 flex gap-2.5">
+            <input id="h-name" type="text" placeholder="New daily habit..." required class="lux-input flex-1 rounded-xl px-3 py-2.5 text-sm" />
+            <button type="submit" class="rounded-xl py-2.5 px-4 text-sm font-semibold lux-btn-primary">Add Habit</button>
+          </form>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            ${state.habits.map((h, idx) => `
+              <div class="lux-card lux-card-interactive animate-stagger rounded-2xl p-4 flex items-center justify-between gap-3" style="animation-delay: ${idx * 45}ms">
+                <button type="button" data-toggle-habit="${h.id}" class="flex items-center gap-3 text-left flex-1">
+                  <span class="w-6 h-6 rounded-xl flex items-center justify-center border font-bold text-xs transition" style="${h.doneToday ? "background: var(--accent); border-color: var(--accent); color: var(--accent-contrast);" : "border-color: var(--text-muted);"}">${h.doneToday ? "✓" : ""}</span>
+                  <div>
+                    <div class="text-sm font-bold">${h.name}</div>
+                    <div class="text-xs tabular-nums" style="color: var(--accent)">${h.streak} day streak · ${h.freq}</div>
+                  </div>
+                </button>
+                <button type="button" data-del-habit="${h.id}" class="text-xs text-rose-400">Delete</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+
+      document.getElementById("habit-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        state.habits.unshift({ id: Date.now(), name: document.getElementById("h-name").value.trim(), freq: "Daily", streak: 0, doneToday: false });
+        saveState();
+        showToast("Habit added");
+        renderAll();
+      });
+      main.querySelectorAll("[data-toggle-habit]").forEach(b => b.addEventListener("click", () => {
+        const h = state.habits.find(x => x.id === Number(b.dataset.toggleHabit));
+        if (h) {
+          h.doneToday = !h.doneToday;
+          h.streak = h.doneToday ? h.streak + 1 : Math.max(0, h.streak - 1);
+          saveState();
+          renderAll();
+        }
+      }));
+      main.querySelectorAll("[data-del-habit]").forEach(b => b.addEventListener("click", () => {
+        state.habits = state.habits.filter(x => x.id !== Number(b.dataset.delHabit));
+        saveState();
+        renderAll();
+      }));
+    }
+
+    function renderNotes(main) {
+      const filtered = state.notes
+        .filter(n => n.title.toLowerCase().includes(noteSearch.toLowerCase()) || n.body.toLowerCase().includes(noteSearch.toLowerCase()))
+        .sort((a, b) => Number(b.pinned) - Number(a.pinned));
+
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4">
+          <input id="note-search" type="text" value="${noteSearch}" placeholder="Search notes..." class="lux-input rounded-xl px-3.5 py-2.5 text-sm" />
+          <form id="note-form" class="lux-card rounded-2xl p-4 flex flex-col gap-2.5">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <input id="n-title" type="text" placeholder="Note title..." required class="lux-input sm:col-span-2 rounded-xl px-3 py-2.5 text-sm" />
+              <input id="n-folder" type="text" value="Personal" placeholder="Folder..." class="lux-input rounded-xl px-3 py-2.5 text-sm" />
+            </div>
+            <textarea id="n-body" rows="2" placeholder="Write your idea or note..." required class="lux-input rounded-xl px-3 py-2 text-sm"></textarea>
+            <button type="submit" class="self-end rounded-xl py-2.5 px-5 text-sm font-semibold lux-btn-primary">Save Note</button>
+          </form>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            ${filtered.map((n, idx) => `
+              <div class="lux-card lux-card-interactive animate-stagger rounded-2xl p-4 flex flex-col gap-2" style="animation-delay: ${idx * 45}ms">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full" style="background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent)">${n.folder}</span>
+                  <div class="flex gap-2 text-xs">
+                    <button type="button" data-pin-note="${n.id}" style="color: ${n.pinned ? "var(--accent)" : "var(--text-muted)"}">${n.pinned ? "Pinned" : "Pin"}</button>
+                    <button type="button" data-del-note="${n.id}" class="text-rose-400">Delete</button>
+                  </div>
+                </div>
+                <h4 class="text-sm font-bold">${n.title}</h4>
+                <p class="text-xs leading-relaxed" style="color: var(--text-muted)">${n.body}</p>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+
+      document.getElementById("note-search").addEventListener("input", (e) => { noteSearch = e.target.value; renderAll(); });
+      document.getElementById("note-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        state.notes.unshift({
+          id: Date.now(),
+          title: document.getElementById("n-title").value.trim(),
+          folder: document.getElementById("n-folder").value.trim() || "Personal",
+          body: document.getElementById("n-body").value.trim(),
+          pinned: false
+        });
+        saveState();
+        showToast("Note saved");
+        renderAll();
+      });
+      main.querySelectorAll("[data-pin-note]").forEach(b => b.addEventListener("click", () => {
+        const n = state.notes.find(x => x.id === Number(b.dataset.pinNote));
+        if (n) { n.pinned = !n.pinned; saveState(); renderAll(); }
+      }));
+      main.querySelectorAll("[data-del-note]").forEach(b => b.addEventListener("click", () => {
+        state.notes = state.notes.filter(x => x.id !== Number(b.dataset.delNote));
+        saveState();
+        renderAll();
+      }));
+    }
+
+    function renderDiscipline(main) {
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4">
+          <form id="disc-form" class="lux-card rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <input id="d-missed" type="text" placeholder="Missed task or commitment..." required class="lux-input rounded-xl px-3 py-2.5 text-sm" />
+            <input id="d-reason" type="text" placeholder="Reason for missing..." required class="lux-input rounded-xl px-3 py-2.5 text-sm" />
+            <select id="d-conseq" class="lux-input rounded-xl px-3 py-2.5 text-sm">
+              <option>Extra study session</option>
+              <option>Clean and organize room</option>
+              <option>Review weekly schedule</option>
+              <option>Complete unfinished task</option>
+            </select>
+            <input id="d-lesson" type="text" placeholder="Lesson learned..." required class="lux-input rounded-xl px-3 py-2.5 text-sm" />
+            <button type="submit" class="sm:col-span-2 rounded-xl py-2.5 px-4 text-sm font-semibold lux-btn-primary">Log Discipline Record</button>
+          </form>
+          <div class="flex flex-col gap-3">
+            ${state.discipline.map((d, idx) => `
+              <div class="lux-card animate-stagger rounded-2xl p-4 flex flex-col gap-2" style="animation-delay: ${idx * 45}ms">
+                <div class="flex justify-between items-start gap-2">
+                  <div>
+                    <h4 class="text-sm font-bold">${d.missed}</h4>
+                    <p class="text-xs" style="color: var(--text-muted)">${d.date} · Reason: ${d.reason}</p>
+                  </div>
+                  <button type="button" data-toggle-disc="${d.id}" class="text-xs px-2.5 py-1 rounded-lg font-semibold" style="${d.completed ? "background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent);" : "background: rgba(244,63,94,0.16); color: #fb7185;"}">${d.completed ? "Completed" : "Pending"}</button>
+                </div>
+                <p class="text-xs"><strong>Constructive Consequence:</strong> ${d.consequence}</p>
+                <p class="text-xs" style="color: var(--text-muted)"><strong>Lesson:</strong> ${d.lesson}</p>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+      document.getElementById("disc-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        state.discipline.unshift({
+          id: Date.now(),
+          missed: document.getElementById("d-missed").value.trim(),
+          date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          reason: document.getElementById("d-reason").value.trim(),
+          consequence: document.getElementById("d-conseq").value,
+          lesson: document.getElementById("d-lesson").value.trim(),
+          completed: false
+        });
+        saveState();
+        showToast("Record logged");
+        renderAll();
+      });
+      main.querySelectorAll("[data-toggle-disc]").forEach(b => b.addEventListener("click", () => {
+        const d = state.discipline.find(x => x.id === Number(b.dataset.toggleDisc));
+        if (d) { d.completed = !d.completed; saveState(); renderAll(); }
+      }));
+    }
+
+    function renderReminders(main) {
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4">
+          <form id="rem-form" class="lux-card rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+            <input id="r-title" type="text" placeholder="Reminder title..." required class="lux-input sm:col-span-5 rounded-xl px-3 py-2.5 text-sm" />
+            <input id="r-time" type="text" placeholder="Time (e.g. Today 7:00 PM)" required class="lux-input sm:col-span-3 rounded-xl px-3 py-2.5 text-sm" />
+            <select id="r-rep" class="lux-input sm:col-span-2 rounded-xl px-2.5 py-2.5 text-sm">
+              <option>Once</option>
+              <option>Daily</option>
+              <option>Weekly</option>
+            </select>
+            <button type="submit" class="sm:col-span-2 rounded-xl py-2.5 px-3 text-sm font-semibold lux-btn-primary">Add</button>
+          </form>
+          <div class="flex flex-col gap-2.5">
+            ${state.reminders.map((r, idx) => `
+              <div class="lux-card animate-stagger rounded-2xl p-4 flex items-center justify-between" style="animation-delay: ${idx * 45}ms">
+                <div>
+                  <div class="text-sm font-bold">${r.title}</div>
+                  <div class="text-xs" style="color: var(--text-muted)">${r.time} · ${r.repeat}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button type="button" data-toggle-rem="${r.id}" class="text-xs px-3 py-1 rounded-full font-semibold" style="${r.enabled ? "background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent);" : "background: rgba(255,255,255,0.08); color: var(--text-muted);"}">${r.enabled ? "Enabled" : "Muted"}</button>
+                  <button type="button" data-del-rem="${r.id}" class="text-xs text-rose-400">Delete</button>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+      document.getElementById("rem-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        state.reminders.unshift({
+          id: Date.now(),
+          title: document.getElementById("r-title").value.trim(),
+          time: document.getElementById("r-time").value.trim(),
+          repeat: document.getElementById("r-rep").value,
+          enabled: true
+        });
+        saveState();
+        showToast("Reminder added");
+        renderAll();
+      });
+      main.querySelectorAll("[data-toggle-rem]").forEach(b => b.addEventListener("click", () => {
+        const r = state.reminders.find(x => x.id === Number(b.dataset.toggleRem));
+        if (r) { r.enabled = !r.enabled; saveState(); renderAll(); }
+      }));
+      main.querySelectorAll("[data-del-rem]").forEach(b => b.addEventListener("click", () => {
+        state.reminders = state.reminders.filter(x => x.id !== Number(b.dataset.delRem));
+        saveState();
+        renderAll();
+      }));
+    }
+
+    function renderCategories(main) {
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4">
+          <form id="cat-form" class="lux-card rounded-2xl p-4 flex gap-2.5">
+            <input id="c-name" type="text" placeholder="New category name..." required class="lux-input flex-1 rounded-xl px-3 py-2.5 text-sm" />
+            <input id="c-color" type="color" value="#60D9A0" class="w-11 h-10 rounded-xl border-0 bg-transparent cursor-pointer" />
+            <button type="submit" class="rounded-xl py-2.5 px-4 text-sm font-semibold lux-btn-primary">Add</button>
+          </form>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            ${state.categories.map((c, idx) => `
+              <div class="lux-card lux-card-interactive animate-stagger rounded-2xl p-4 flex items-center justify-between" style="animation-delay: ${idx * 40}ms">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-3.5 h-3.5 rounded-full shrink-0" style="background: ${c.color}"></span>
+                  <span class="text-sm font-semibold">${c.name}</span>
+                </div>
+                <button type="button" data-del-cat="${c.id}" class="text-xs text-rose-400">×</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+      document.getElementById("cat-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        state.categories.push({ id: Date.now(), name: document.getElementById("c-name").value.trim(), color: document.getElementById("c-color").value });
+        saveState();
+        showToast("Category added");
+        renderAll();
+      });
+      main.querySelectorAll("[data-del-cat]").forEach(b => b.addEventListener("click", () => {
+        state.categories = state.categories.filter(x => x.id !== Number(b.dataset.delCat));
+        saveState();
+        renderAll();
+      }));
+    }
+
+    function renderCustom(main) {
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4">
+          <form id="cust-form" class="lux-card rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+            <input id="cu-name" type="text" placeholder="Custom tracker name (e.g. Reading, Finance)..." required class="lux-input sm:col-span-4 rounded-xl px-3 py-2.5 text-sm" />
+            <input id="cu-desc" type="text" placeholder="Description..." required class="lux-input sm:col-span-4 rounded-xl px-3 py-2.5 text-sm" />
+            <select id="cu-freq" class="lux-input sm:col-span-2 rounded-xl px-2.5 py-2.5 text-sm">
+              <option>Daily</option>
+              <option>Weekly</option>
+            </select>
+            <button type="submit" class="sm:col-span-2 rounded-xl py-2.5 px-3 text-sm font-semibold lux-btn-primary">Create</button>
+          </form>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            ${state.customItems.map((ci, idx) => `
+              <div class="lux-card lux-card-interactive animate-stagger rounded-2xl p-4 flex items-center justify-between" style="animation-delay: ${idx * 45}ms">
+                <div>
+                  <h4 class="text-sm font-bold">${ci.name}</h4>
+                  <p class="text-xs" style="color: var(--text-muted)">${ci.desc} · ${ci.freq}</p>
+                </div>
+                <button type="button" data-inc-cust="${ci.id}" class="px-3.5 py-1.5 rounded-xl text-xs font-bold tabular-nums lux-btn-primary">+1 (${ci.count})</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+      document.getElementById("cust-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        state.customItems.unshift({
+          id: Date.now(),
+          name: document.getElementById("cu-name").value.trim(),
+          desc: document.getElementById("cu-desc").value.trim(),
+          freq: document.getElementById("cu-freq").value,
+          count: 0
+        });
+        saveState();
+        showToast("Custom tracker created");
+        renderAll();
+      });
+      main.querySelectorAll("[data-inc-cust]").forEach(b => b.addEventListener("click", () => {
+        const ci = state.customItems.find(x => x.id === Number(b.dataset.incCust));
+        if (ci) { ci.count++; saveState(); renderAll(); }
+      }));
+    }
+
+    function renderAnalytics(main) {
+      const studyMins = state.studySessions.reduce((a, b) => a + b.minutes, 0);
+      main.innerHTML = `
+        <div class="animate-view grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${[
+            { label: "Daily Completion Rate", val: `${calcDailyProgress()}%`, accent: true },
+            { label: "Total Study Planned", val: `${(studyMins / 60).toFixed(1)} hrs` },
+            { label: "Workouts Logged", val: state.workouts.length },
+            { label: "Active Habits", val: state.habits.length },
+            { label: "Missed Commitments", val: state.discipline.length },
+            { label: "Custom Trackers", val: state.customItems.length }
+          ].map((c, idx) => `
+            <div class="lux-card animate-stagger rounded-2xl p-5" style="animation-delay: ${idx * 45}ms">
+              <div class="text-xs uppercase tracking-wider font-semibold" style="color: var(--text-muted)">${c.label}</div>
+              <div class="text-3xl font-extrabold tabular-nums mt-2" style="${c.accent ? "color: var(--accent)" : ""}">${c.val}</div>
+            </div>
+          `).join("")}
+        </div>`;
+    }
+
+    function renderSettings(main) {
+      main.innerHTML = `
+        <div class="animate-view flex flex-col gap-4 max-w-xl">
+          <div class="lux-card rounded-2xl p-5 flex flex-col gap-3">
+            <h3 class="text-sm font-bold">Profile Settings</h3>
+            <div class="flex gap-2">
+              <input id="set-name" type="text" value="${state.userName}" class="lux-input flex-1 rounded-xl px-3 py-2.5 text-sm" />
+              <button id="save-name-btn" type="button" class="px-4 py-2.5 rounded-xl text-sm font-semibold lux-btn-primary">Save</button>
+            </div>
+          </div>
+          <div class="lux-card rounded-2xl p-5 flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold">Formal Color Correction</h3>
+              <p class="text-xs" style="color: var(--text-muted)">Open the Appearance Studio anytime to customize colors</p>
+            </div>
+            <button id="open-studio-set-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold lux-btn-primary">Open Studio</button>
+          </div>
+          <div class="lux-card rounded-2xl p-5 flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold">Reset Demo Data</h3>
+              <p class="text-xs" style="color: var(--text-muted)">Restore default PLAN starter records</p>
+            </div>
+            <button id="reset-data-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-500/15 text-rose-400 active:scale-95 transition">Reset</button>
+          </div>
+        </div>`;
+
+      document.getElementById("save-name-btn").addEventListener("click", () => {
+        state.userName = document.getElementById("set-name").value.trim() || "Eldad";
+        saveState();
+        showToast("Profile updated");
+        renderAll();
+      });
+      document.getElementById("open-studio-set-btn").addEventListener("click", openColorDrawer);
+      document.getElementById("reset-data-btn").addEventListener("click", () => {
+        state = defaultState();
+        saveState();
+        applyColors();
+        showToast("Data reset");
+        renderAll();
+      });
+    }
+
+    function renderAll() {
+      applyColors();
+      renderNavigation();
+      document.getElementById("sidebar-user-label").textContent = state.userName;
+      const currentItem = NAV_ITEMS.find((i) => i.id === state.activeTab) || NAV_ITEMS[0];
+      document.getElementById("page-title").textContent = currentItem.label;
+      document.getElementById("header-date").textContent = new Date().toLocaleDateString("en-US", {
+        weekday: "long", month: "short", day: "numeric", year: "numeric"
+      });
+
+      const main = document.getElementById("main-content");
+      const views = {
+        dashboard: renderDashboard,
+        tasks: renderTasks,
+        goals: renderGoals,
+        workout: renderWorkout,
+        study: renderStudy,
+        habits: renderHabits,
+        notes: renderNotes,
+        discipline: renderDiscipline,
+        reminders: renderReminders,
+        categories: renderCategories,
+        custom: renderCustom,
+        analytics: renderAnalytics,
+        settings: renderSettings
+      };
+      (views[state.activeTab] || renderDashboard)(main);
+    }
+
+    document.getElementById("header-color-btn").addEventListener("click", openColorDrawer);
+    document.getElementById("sidebar-color-btn").addEventListener("click", openColorDrawer);
+    document.getElementById("color-backdrop").addEventListener("click", closeColorDrawer);
+    document.getElementById("close-color-btn").addEventListener("click", closeColorDrawer);
+
+    ["cp-bg", "cp-card", "cp-accent", "cp-text"].forEach((id) => {
+      document.getElementById(id).addEventListener("input", (e) => {
+        state.colors.id = "custom";
+        if (id === "cp-bg") { state.colors.bg = e.target.value; state.colors.surface = e.target.value; }
+        if (id === "cp-card") state.colors.card = e.target.value;
+        if (id === "cp-accent") state.colors.accent = e.target.value;
+        if (id === "cp-text") state.colors.text = e.target.value;
+        saveState();
+        applyColors();
+        renderPresets();
+      });
+    });
+
+    document.getElementById("reset-colors-btn").addEventListener("click", () => {
+      state.colors = { ...FORMAL_PALETTES[0] };
+      saveState();
+      applyColors();
+      renderPresets();
+      renderAll();
+      showToast("Default colors restored");
+    });
+
+    document.getElementById("mob-more-btn").addEventListener("click", openMoreDrawer);
+    document.getElementById("more-backdrop").addEventListener("click", closeMoreDrawer);
+    document.getElementById("close-more-btn").addEventListener("click", closeMoreDrawer);
+    document.getElementById("pc-quick-add-btn").addEventListener("click", openQuickModal);
+    document.getElementById("mobile-quick-add-btn").addEventListener("click", openQuickModal);
+    document.getElementById("quick-backdrop").addEventListener("click", closeQuickModal);
+    document.getElementById("close-quick-btn").addEventListener("click", closeQuickModal);
+
+    document.getElementById("quick-save-btn").addEventListener("click", () => {
+      const type = document.getElementById("quick-type").value;
+      const title = document.getElementById("quick-title").value.trim();
+      const extra = document.getElementById("quick-extra").value.trim();
+      if (!title) return;
+      if (type === "task") state.tasks.unshift({ id: Date.now(), title, priority: "medium", category: extra || "Personal", date: "Today", done: false });
+      if (type === "habit") state.habits.unshift({ id: Date.now(), name: title, freq: extra || "Daily", streak: 0, doneToday: false });
+      if (type === "goal") state.goals.unshift({ id: Date.now(), title, type: "Short-term", deadline: extra, progress: 0 });
+      if (type === "note") state.notes.unshift({ id: Date.now(), title, folder: "Personal", body: extra || title, pinned: false });
+      if (type === "reminder") state.reminders.unshift({ id: Date.now(), title, time: extra || "Today", repeat: "Once", enabled: true });
+      document.getElementById("quick-title").value = "";
+      document.getElementById("quick-extra").value = "";
+      saveState();
+      closeQuickModal();
+      showToast("Added to PLAN");
+      renderAll();
+    });
+
+    loadState();
+    renderAll();
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
